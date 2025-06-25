@@ -30,12 +30,12 @@ export default function Root() {
           }
         >
           <Route index element={<Home />} />
-          <Route path="Products" element={<Products />} />
-          <Route path="Categories" element={<Categories />} />
-          <Route path="Orders" element={<Orders />} />
-          <Route path="FormForProduct" element={<FormForProduct />} />
-          <Route path="FormForCategory" element={<FormForCategory />} />
-          <Route path="ProductDetails" element={<ProductDetails />} />
+          <Route path="/Products" element={<Products />} />
+          <Route path="/Categories" element={<Categories />} />
+          <Route path="/Orders" element={<Orders />} />
+          <Route path="/FormForProduct" element={<FormForProduct />} />
+          <Route path="/FormForCategory" element={<FormForCategory />} />
+          <Route path="/ProductDetails" element={<ProductDetails />} />
 
           <Route path="/orderDetails" element={<OrderDetails />} />
         </Route>
