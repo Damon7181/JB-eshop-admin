@@ -97,7 +97,7 @@ const Orders = () => {
                 </div>
               </div>
 
-              {/* Total + Buttons */}
+              {/* Total + Buttons*/}
               <div className="mt-4">
                 <p className="text-right font-semibold text-blue-700">
                   Total: ${order.totalAmount?.toFixed(2)}
