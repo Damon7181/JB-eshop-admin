@@ -16,7 +16,7 @@ export default function SaunaPage() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/products")
+      .get("jb-eshop-backend-production.up.railway.app/api/products")
       .then((res) => {
         setProducts(res.data);
         setLoading(false);

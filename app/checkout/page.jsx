@@ -29,13 +29,16 @@ export default function CheckoutPage() {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/api/orders", {
-        customerName: formData.name,
-        customerEmail: formData.email,
-        deliveryAddress: formData.address,
-        products: cartItems,
-        totalAmount: total,
-      });
+      const response = await axios.post(
+        "jb-eshop-backend-production.up.railway.app/api/orders",
+        {
+          customerName: formData.name,
+          customerEmail: formData.email,
+          deliveryAddress: formData.address,
+          products: cartItems,
+          totalAmount: total,
+        }
+      );
       console.log("Order saved:", response.data);
       alert("Order placed successfully!");
     } catch (err) {
