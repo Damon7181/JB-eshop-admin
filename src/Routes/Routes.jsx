@@ -36,7 +36,6 @@ export default function Root() {
           <Route path="FormForProduct" element={<FormForProduct />} />
           <Route path="FormForCategory" element={<FormForCategory />} />
           <Route path="ProductDetails" element={<ProductDetails />} />
-
           <Route path="/orderDetails" element={<OrderDetails />} />
         </Route>
       </Routes>
