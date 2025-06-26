@@ -38,12 +38,12 @@ export default function FormForProduct() {
     try {
       if (editingProduct) {
         await axios.put(
-          `http://localhost:5000/api/products/${editingProduct._id}`,
+          `https://jb-eshop-backend-production.up.railway.app/api/products/${editingProduct._id}`,
           formData
         );
         toast.success("Product updated successfully!");
       } else {
-        await axios.post("http://localhost:5000/api/products", formData);
+        await axios.post("https://jb-eshop-backend-production.up.railway.app/api/products", formData);
         toast.success("Product added successfully!");
       }
       //take you back to the products Dashboard

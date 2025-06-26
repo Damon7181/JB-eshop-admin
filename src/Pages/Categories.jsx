@@ -10,7 +10,7 @@ export default function Categories() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/categories")
+      .get("https://jb-eshop-backend-production.up.railway.app/api/categories")
       .then((res) => setCategories(res.data))
       .catch((error) => console.error("Error fetching categories:", error));
   }, []);
@@ -28,7 +28,7 @@ export default function Categories() {
 
     if (result.isConfirmed) {
       try {
-        await axios.delete(`http://localhost:5000/api/categories/${id}`);
+        await axios.delete(`https://jb-eshop-backend-production.up.railway.app/api/categories/${id}`);
         setCategories((prev) => prev.filter((category) => category._id !== id));
         Swal.fire("Deleted!", "Category has been deleted.", "success");
       } catch (error) {

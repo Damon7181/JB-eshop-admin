@@ -34,12 +34,12 @@ export default function FormForCategory() {
     try {
       if (editingCategory) {
         await axios.put(
-          `http://localhost:5000/api/categories/${editingCategory._id}`,
+          `https://jb-eshop-backend-production.up.railway.app/api/categories/${editingCategory._id}`,
           formData
         );
         toast.success("Category updated successfully!");
       } else {
-        await axios.post("http://localhost:5000/api/categories", formData);
+        await axios.post("https://jb-eshop-backend-production.up.railway.app/api/categories", formData);
         toast.success("Category added successfully!");
       }
       navigate("/Categories");

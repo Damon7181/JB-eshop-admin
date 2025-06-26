@@ -14,7 +14,7 @@ const Orders = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/orders")
+      .get("https://jb-eshop-backend-production.up.railway.app/api/orders")
       .then((res) => {
         setOrders(res.data);
       })

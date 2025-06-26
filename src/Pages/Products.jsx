@@ -22,7 +22,7 @@ export default function Products() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/products")
+      .get("https://jb-eshop-backend-production.up.railway.app/api/products")
       .then((res) => setProducts(res.data))
       .catch((error) => console.error("Error fetching products:", error));
   }, []);
@@ -53,7 +53,9 @@ export default function Products() {
 
     if (result.isConfirmed) {
       try {
-        await axios.delete(`http://localhost:5000/api/products/${id}`);
+        await axios.delete(
+          `https://jb-eshop-backend-production.up.railway.app/api/products/${id}`
+        );
         setProducts((prev) => prev.filter((product) => product._id !== id));
         Swal.fire("Deleted!", "Product has been deleted.", "success");
       } catch (error) {
