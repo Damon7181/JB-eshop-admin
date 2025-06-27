@@ -83,7 +83,7 @@ export default function Barchart() {
   return (
     <>
       <div>
-        <Bar data={data} options={options} width={600} height={400} />
+        <Bar data={data} options={options} width={520} height={400} />
       </div>
     </>
   );

@@ -38,7 +38,7 @@ const Home = () => {
 
   return (
     <section className=" text-gray-600 w-full">
-      <div className="container px-5 mx-auto w-full">
+      <div className=" px-5 mx-auto w-full">
         <div>
           <h1 className="text-4xl text-zinc-950 font-bold">
             Welcome back, User!
@@ -82,10 +82,10 @@ const Home = () => {
           ))}
         </div>
         <div className="grid lg:grid-cols-2 md:grid-cols-2 sm:grid-cols-1 gap-16 mt-6 px-1">
-          <div className="bg-white p-4 shadow-[-4px_0_2px_rgba(0,0,0,0.1)] rounded">
+          <div className="bg-white p-2 shadow-[-4px_0_2px_rgba(0,0,0,0.1)] rounded ">
             <Barchart />
           </div>
-          <div className="bg-white p-4 shadow-[-4px_0_2px_rgba(0,0,0,0.1)] rounded">
+          <div className="bg-white p-2 shadow-[-4px_0_2px_rgba(0,0,0,0.1)] rounded">
             <Linechart />
           </div>
         </div>
