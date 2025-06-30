@@ -29,11 +29,17 @@ export default function Navbar() {
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationRef = useRef();
 
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
   const toggleNotificationPanel = () => {
-    setShowNotifications((prev) => !prev);
+    setShowNotifications((prev) => {
+      if (!prev) setUnreadCount(0); // Reset badge count when opening
+      return !prev;
+    });
   };
-  // Close notification panel when clicking outside
-  // This effect adds an event listener to the document to close the notification panel when clicking outside
+
+  // Close panel when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (
@@ -43,34 +49,45 @@ export default function Navbar() {
         setShowNotifications(false);
       }
     }
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
-  // Generate token for notifications when the component mounts
-  // This effect calls the generateToken function to set up Firebase Cloud Messaging
+  // Set up Firebase Messaging
   useEffect(() => {
-    generateToken();
-    onMessage(messaging, (payload) => {
-      console.log("Message received. ", payload);
-      // Customize the notification display here if needed
-      // alert(`New notification: ${payload.notification.title}`);
+    generateToken(); // You already have this implemented
+
+    const unsubscribe = onMessage(messaging, (payload) => {
+      console.log("📩 Notification received:", payload);
+
+      const { title, body } = payload.notification;
+      const newNotification = {
+        id: Date.now(),
+        title,
+        body,
+        timestamp: new Date().toLocaleString(),
+      };
+
+      setNotifications((prev) => [newNotification, ...prev]);
+      setUnreadCount((prev) => prev + 1);
     });
+
+    return () => unsubscribe(); // Clean up listener
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/Login");
   };
+
   return (
     <Disclosure as="nav" className="bg-gray-800">
       <div className="mx-auto sm:px-6 md:px-8 lg:px-8">
         <div className="relative flex h-16 items-center justify-end">
           <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-            {/* Notification Button */}
+            {/* 🔔 Notification */}
             <div className="relative" ref={notificationRef}>
               <button
                 type="button"
@@ -78,24 +95,42 @@ export default function Navbar() {
                 onClick={toggleNotificationPanel}
               >
                 <span className="sr-only">View notifications</span>
-                <BellIcon aria-hidden="true" className="h-6 w-6" />
+                <BellIcon className="h-6 w-6" />
+
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1.5 py-0.5">
+                    {unreadCount}
+                  </span>
+                )}
               </button>
 
+              {/* Dropdown Notifications Panel */}
               {showNotifications && (
-                <div className="absolute right-0 z-50 mt-2 w-72 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                <div className="absolute right-0 z-50 mt-2 w-72 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none max-h-64 overflow-y-auto">
                   <div className="p-4">
-                    <p className="text-sm font-medium text-gray-800">
-                      🔔 New Order Received
-                    </p>
-                    <p className="mt-1 text-xs text-gray-500">
-                      A user just placed an order.
-                    </p>
+                    {notifications.length === 0 ? (
+                      <p className="text-sm text-gray-500">
+                        No new notifications
+                      </p>
+                    ) : (
+                      notifications.map((note) => (
+                        <div key={note.id} className="mb-2 border-b pb-2">
+                          <p className="text-sm font-medium text-gray-800">
+                            🔔 {note.title}
+                          </p>
+                          <p className="text-xs text-gray-500">{note.body}</p>
+                          <p className="text-[10px] text-gray-400">
+                            {note.timestamp}
+                          </p>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Profile dropdown */}
+            {/* 👤 Profile Dropdown */}
             <Menu as="div" className="relative ml-3">
               <div>
                 <MenuButton className="relative flex rounded-full bg-gray-800 text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 cursor-pointer">
@@ -122,6 +157,7 @@ export default function Navbar() {
         </div>
       </div>
 
+      {/* Mobile navigation */}
       <DisclosurePanel className="sm:hidden">
         <div className="space-y-1 px-2 pt-2 pb-3">
           {navigation.map((item) => (
