@@ -7,11 +7,17 @@ import {
   MenuItem,
   MenuItems,
 } from "@headlessui/react";
-import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { BellIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { generateToken, messaging } from "../notifications/firebase";
 import { onMessage } from "firebase/messaging";
+import { toast } from "react-toastify";
+import { io } from "socket.io-client";
+
+// ⚡ Setup socket connection to backend
+// const socket = io("http://localhost:5000"); // replace with your deployed backend if needed
+const socket = io("https://jb-eshop-backend-production.up.railway.app");
 
 const navigation = [
   { name: "Dashboard", href: "#", current: true },
@@ -27,42 +33,33 @@ function classNames(...classes) {
 export default function Navbar() {
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
-  const notificationRef = useRef();
-
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const notificationRef = useRef();
 
   const toggleNotificationPanel = () => {
     setShowNotifications((prev) => {
-      if (!prev) setUnreadCount(0); // Reset badge count when opening
+      if (!prev) setUnreadCount(0); // reset badge when opening
       return !prev;
     });
   };
 
-  // Close panel when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (
-        notificationRef.current &&
-        !notificationRef.current.contains(event.target)
-      ) {
-        setShowNotifications(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  // 🔒 Logout
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/Login");
+  };
 
-  // Set up Firebase Messaging
+  // 📦 Load existing notifications and FCM real-time push
   useEffect(() => {
-    generateToken(); // You already have this implemented
+    generateToken();
 
     const unsubscribe = onMessage(messaging, (payload) => {
-      console.log("📩 Notification received:", payload);
+      const { title, body } = payload.notification || {
+        title: "No Title",
+        body: "No Body",
+      };
 
-      const { title, body } = payload.notification;
       const newNotification = {
         id: Date.now(),
         title,
@@ -72,22 +69,71 @@ export default function Navbar() {
 
       setNotifications((prev) => [newNotification, ...prev]);
       setUnreadCount((prev) => prev + 1);
+      toast.info(`${title}: ${body}`, { autoClose: 3000 });
     });
 
-    return () => unsubscribe(); // Clean up listener
+    fetch(
+      "https://jb-eshop-backend-production.up.railway.app/api/notifications"
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        const formatted = data.map((d) => ({
+          id: d._id || Date.now() + Math.random(),
+          title: d.title,
+          body: d.body,
+          timestamp: new Date(d.timestamp || Date.now()).toLocaleString(),
+        }));
+        setNotifications(formatted.reverse());
+        setUnreadCount(formatted.length);
+      })
+      .catch((err) =>
+        console.error("Error loading backend notifications", err)
+      );
+
+    return () => unsubscribe();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/Login");
-  };
+  // ⚡ Real-time socket event listener
+  useEffect(() => {
+    socket.on("new-order", (data) => {
+      console.log("📥 Socket new order:", data);
+      const newNotification = {
+        id: Date.now(),
+        title: data.title,
+        body: data.body,
+        timestamp: new Date().toLocaleString(),
+      };
+      setNotifications((prev) => [newNotification, ...prev]);
+      setUnreadCount((prev) => prev + 1);
+      toast.info(`${data.title}: ${data.body}`, { autoClose: 3000 });
+    });
+
+    return () => {
+      socket.off("new-order");
+    };
+  }, []);
+
+  // 🧊 Close dropdown when clicked outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target)
+      ) {
+        setShowNotifications(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <Disclosure as="nav" className="bg-gray-800">
       <div className="mx-auto sm:px-6 md:px-8 lg:px-8">
         <div className="relative flex h-16 items-center justify-end">
           <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-            {/* 🔔 Notification */}
+            {/* 🔔 Notification Bell */}
             <div className="relative" ref={notificationRef}>
               <button
                 type="button"
@@ -96,7 +142,6 @@ export default function Navbar() {
               >
                 <span className="sr-only">View notifications</span>
                 <BellIcon className="h-6 w-6" />
-
                 {unreadCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1.5 py-0.5">
                     {unreadCount}
@@ -104,14 +149,12 @@ export default function Navbar() {
                 )}
               </button>
 
-              {/* Dropdown Notifications Panel */}
+              {/* ⬇️ Notification Dropdown */}
               {showNotifications && (
                 <div className="absolute right-0 z-50 mt-2 w-72 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none max-h-64 overflow-y-auto">
                   <div className="p-4">
                     {notifications.length === 0 ? (
-                      <p className="text-sm text-gray-500">
-                        No new notifications
-                      </p>
+                      <p className="text-sm text-gray-500">No notifications</p>
                     ) : (
                       notifications.map((note) => (
                         <div key={note.id} className="mb-2 border-b pb-2">
@@ -157,7 +200,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile navigation */}
+      {/* 📱 Mobile Navigation */}
       <DisclosurePanel className="sm:hidden">
         <div className="space-y-1 px-2 pt-2 pb-3">
           {navigation.map((item) => (

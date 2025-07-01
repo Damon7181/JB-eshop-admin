@@ -22,6 +22,24 @@ const app = initializeApp(firebaseConfig);
 // const analytics = getAnalytics(app);
 export const messaging = getMessaging(app);
 
+// export const generateToken = async () => {
+//   const permission = await Notification.requestPermission();
+//   console.log("Permission status:", permission);
+//   if (permission === "granted") {
+//     try {
+//       const token = await getToken(messaging, {
+//         vapidKey:
+//           "BLbLELb7qRTxZSQqpJgMHxulcsqbhpc1dZotpXJ7rR47uLdR_dn17eB9c_Mp-GkaPqvL4IYtru2pYXXF9huzWuM",
+//       });
+//       console.log("Generated token:", token);
+//       return token;
+//     } catch (error) {
+//       console.error("Error generating token:", error);
+//     }
+//   } else {
+//     console.error("Permission not granted for notifications.");
+//   }
+// };
 export const generateToken = async () => {
   const permission = await Notification.requestPermission();
   console.log("Permission status:", permission);
@@ -31,7 +49,21 @@ export const generateToken = async () => {
         vapidKey:
           "BLbLELb7qRTxZSQqpJgMHxulcsqbhpc1dZotpXJ7rR47uLdR_dn17eB9c_Mp-GkaPqvL4IYtru2pYXXF9huzWuM",
       });
+
       console.log("Generated token:", token);
+
+      // ⬇️ Send token to backend
+      await fetch(
+        "https://jb-eshop-backend-production.up.railway.app/api/save-admin-token",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ token }),
+        }
+      );
+
       return token;
     } catch (error) {
       console.error("Error generating token:", error);
@@ -40,3 +72,8 @@ export const generateToken = async () => {
     console.error("Permission not granted for notifications.");
   }
 };
+Notification.requestPermission().then((permission) => {
+  if (permission === "granted") {
+    console.log("🟢 Notifications allowed.");
+  }
+});
